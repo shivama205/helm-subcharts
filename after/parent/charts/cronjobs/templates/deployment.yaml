@@ -1,0 +1,54 @@
+{{- $projectName := .Values.global.config.name -}}
+{{- $projectNamespace := .Values.global.config.namespace -}}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $projectName }}-cronjobs
+  namespace: {{ $projectNamespace }}
+  labels:
+    app.kubernetes.io/name: {{ $projectName }}-cronjobs
+    app.kubernetes.io/managed-by: Tiller
+    app.kubernetes.io/instance: {{ $projectName }}-cronjobs
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $projectName }}-cronjobs
+      app.kubernetes.io/instance: {{ $projectName }}-cronjobs
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configMap.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ $projectName }}-cronjobs
+        app.kubernetes.io/instance: {{ $projectName }}-cronjobs
+    spec:
+    {{- if .Values.image.isPrivate }}
+      imagePullSecrets:
+        - name: {{ .Values.image.secrets }}
+    {{- end }}
+    {{- if .Values.deployment.timezone }}
+      volumes:
+        - name: {{ .Values.deployment.timezone.name }}
+          hostPath:
+            path: "/usr/share/zoneinfo/{{ .Values.deployment.timezone.zone }}"
+    {{- end }}
+      containers:
+        - name: {{ $projectName }}-cronjobs
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: Always
+        {{- if .Values.deployment.timezone }}
+          volumeMounts:
+            - name: {{ .Values.deployment.timezone.name }}
+              mountPath: /etc/localtime
+        {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.deployment.containerPort }}
+              protocol: TCP
+          envFrom:
+          - configMapRef:
+              name: {{ $projectName }}-cronjobs-cm
+          resources:
+{{ toYaml .Values.deployment.resources | indent 12 }}

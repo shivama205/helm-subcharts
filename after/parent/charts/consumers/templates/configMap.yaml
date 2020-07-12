@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.config.name }}-consumers-cm
+  namespace: {{ .Values.global.config.namespace }}
+data:
+  type: consumers # add values to the configmap sepecific to consumers
+{{ toYaml .Values.global.configs.configMap | indent 2 }}

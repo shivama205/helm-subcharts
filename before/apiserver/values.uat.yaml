@@ -1,0 +1,52 @@
+config:
+  name: apiserver
+  namespace: default 
+  env: uat 
+
+configs:
+  configMap:
+    type: apiserver
+    key1: value1
+    key2: value2
+image:
+  isPrivate: true
+  secrets: regsecret
+  repository: ""
+  tag: ""
+  pullPolicy: Always
+
+deployment:
+  replicaCount: 1
+  containerPort: 8080
+  readiness:
+    path: / 
+    initialDelaySeconds: 10 # how long to wait before checking
+    periodSeconds: 10 # how long to wait between checks
+    successThreshold: 1 # how many successes to hit before accepting
+    failureThreshold: 3 # how many failures to accept before failing
+    timeoutSeconds: 5 # timeout to wait for a response
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  timezone:
+    name: tz-config
+    zone: ""
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  hosts:
+    - host: ""
+      path: /
+      port: http
+  tls:
+   - secretName: ""
+     hosts:
+       - ""

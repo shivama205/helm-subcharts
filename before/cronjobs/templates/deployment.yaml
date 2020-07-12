@@ -1,0 +1,56 @@
+{{- $projectName := .Values.config.name -}}
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ .Values.config.name }}
+  namespace: {{ .Values.config.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .Values.config.name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ .Values.config.name }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ .Values.config.name }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+    {{- if .Values.image.isPrivate }}
+      imagePullSecrets:
+        - name: {{ .Values.image.secrets }}
+    {{- end }}
+    {{- if .Values.deployment.timezone }}
+      volumes:
+        - name: {{ .Values.deployment.timezone.name }}
+          hostPath:
+            path: "/usr/share/zoneinfo/{{ .Values.deployment.timezone.zone }}"
+    {{- end }}
+      containers:
+        - name: {{ .Values.config.name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.deployment.timezone }}
+          volumeMounts:
+            - name: {{ .Values.deployment.timezone.name }}
+              mountPath: /etc/localtime
+        {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.deployment.containerPort }}
+              protocol: TCP
+          env:
+          {{- range $key, $value := .Values.configs.configMap }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.deployment.resources | indent 12 }}
+{{- if .Values.deployment.nodeSelector }}
+      nodeSelector:
+  {{ toYaml .Values.deployment.nodeSelector | indent 8 }}
+{{- end }}

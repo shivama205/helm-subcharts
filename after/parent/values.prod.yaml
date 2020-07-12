@@ -1,0 +1,55 @@
+global:
+  config:
+    name: parent
+    namespace: default
+    env: prod 
+
+  configs:
+    configMap:
+      key1: value1
+      key2: value2
+
+apiserver:
+  image:
+    tag: "" 
+  deployment:
+    readiness:
+      path: / 
+      initialDelaySeconds: 10 # how long to wait before checking
+      periodSeconds: 10 # how long to wait between checks
+      successThreshold: 1 # how many successes to hit before accepting
+      failureThreshold: 3 # how many failures to accept before failing
+      timeoutSeconds: 5 # timeout to wait for a response  
+  ingress:
+    hosts:
+      - host: ""
+        path: /
+        port: http
+    tls:
+    - secretName: ""
+      hosts:
+        - ""
+
+worker:
+  image:
+    tag: "" 
+  deployment:
+    readiness:
+      path: / 
+      initialDelaySeconds: 10 # how long to wait before checking
+      periodSeconds: 10 # how long to wait between checks
+      successThreshold: 1 # how many successes to hit before accepting
+      failureThreshold: 3 # how many failures to accept before failing
+      timeoutSeconds: 5 # timeout to wait for a response 
+
+cron: 
+  image:
+    tag: "" 
+  deployment:
+    readiness:
+      path: / 
+      initialDelaySeconds: 10 # how long to wait before checking
+      periodSeconds: 10 # how long to wait between checks
+      successThreshold: 1 # how many successes to hit before accepting
+      failureThreshold: 3 # how many failures to accept before failing
+      timeoutSeconds: 5 # timeout to wait for a response 

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.config.name }}-apiserver-cm
+  namespace: {{ .Values.global.config.namespace }}
+data:
+  type: apiserver # add values to the configmap sepecific to apiserver
+{{ toYaml .Values.global.configs.configMap | indent 2 }}

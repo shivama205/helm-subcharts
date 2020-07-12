@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.config.name }}-cronjobs-cm
+  namespace: {{ .Values.global.config.namespace }}
+data:
+  type: cronjobs # add values to the configmap sepecific to cronjobs
+{{ toYaml .Values.global.configs.configMap | indent 2 }}
